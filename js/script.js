@@ -1,34 +1,70 @@
-// ================================
-// CE ARENA
-// Main JavaScript
-// ================================
+document.addEventListener("DOMContentLoaded", () => {
+    loadGames();
 
-const menuToggle = document.getElementById("menuToggle");
-const navLinks = document.getElementById("navLinks");
+    const menuButton = document.querySelector(".menu-toggle");
+    const nav = document.querySelector(".nav-links");
 
-
-// Mobile navigation
-
-menuToggle.addEventListener("click", () => {
-
-    navLinks.classList.toggle("mobile-active");
-
+    if (menuButton && nav) {
+        menuButton.addEventListener("click", () => {
+            nav.classList.toggle("active");
+        });
+    }
 });
 
 
-// Close mobile navigation after clicking a link
+async function loadGames() {
+    try {
+        const response = await fetch("/api/games");
 
-document.querySelectorAll(".nav-links a").forEach(link => {
+        if (!response.ok) {
+            throw new Error("Failed to load games");
+        }
 
-    link.addEventListener("click", () => {
+        const games = await response.json();
 
-        navLinks.classList.remove("mobile-active");
+        displayGames(games);
 
+    } catch (error) {
+        console.error("Error loading games:", error);
+    }
+}
+
+
+function displayGames(games) {
+    const gamesContainer = document.querySelector(".games-grid");
+
+    if (!gamesContainer) {
+        console.error("Games container not found");
+        return;
+    }
+
+    gamesContainer.innerHTML = "";
+
+    games.forEach(game => {
+        const gameCard = document.createElement("div");
+
+        gameCard.className = "game-card";
+
+        gameCard.innerHTML = `
+            <div class="game-image">
+                ${
+                    game.image_url
+                    ? `<img src="${game.image_url}" alt="${game.name}">`
+                    : ""
+                }
+            </div>
+
+            <div class="game-info">
+                <h3>${game.name}</h3>
+                <p>${game.description || "No description available."}</p>
+
+                <div class="game-meta">
+                    <span>${game.genre || "Game"}</span>
+                    <span>${game.platforms || "PC"}</span>
+                </div>
+            </div>
+        `;
+
+        gamesContainer.appendChild(gameCard);
     });
-
-});
-
-
-// Simple welcome message
-
-console.log("CE ARENA loaded successfully 🎮");
+}
